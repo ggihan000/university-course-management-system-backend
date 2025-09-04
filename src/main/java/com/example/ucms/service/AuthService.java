@@ -1,6 +1,7 @@
 package com.example.ucms.service;
 
 import com.example.ucms.dto.AuthResponse;
+import com.example.ucms.dto.ChangePasswordRequest;
 import com.example.ucms.model.User;
 import com.example.ucms.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,19 +39,38 @@ public class AuthService {
         return repo.save(user);
     }
 
+    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+        System.out.println(changePasswordRequest.getNpassword()+changePasswordRequest.getCpassword());
+        Optional<User> userinfo = repo.findByEmail(changePasswordRequest.getEmail());
+        if (userinfo.isEmpty()) {
+            throw new RuntimeException("Bad Credentials");
+        }
+        User user = userinfo.get();
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUserId(), changePasswordRequest.getCpassword()));
+
+        System.out.println("jhdjhgfd");
+        if(authentication.isAuthenticated()){
+            user.setPassword(encoder.encode(changePasswordRequest.getNpassword()));
+            repo.save(user);
+        }else{
+            throw new RuntimeException("Bad Credentials");
+        }
+    }
+
     //verify user details
     public AuthResponse verify(User user) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+        Optional<User> userinfo = repo.findByEmail(user.getEmail());
+        if (userinfo.isEmpty()) {
+            throw new RuntimeException("Bad Credentials");
+        }
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userinfo.get().getUserId(), user.getPassword()));
+
         if (authentication.isAuthenticated()) {
+
             AuthResponse authResponse = new AuthResponse();
-            Optional<User> userinfo = repo.findByEmail(user.getEmail());
-            if (userinfo.isPresent()) {
-                System.out.println("blpm "+userinfo.get().getUserId());
-            };
-            System.out.println("hiii"+(userinfo.isPresent()?userinfo.get().getEmail():"null"));
-            authResponse.setRole(userinfo.isPresent() ? userinfo.get().getRole_id() : null);
+
+            authResponse.setRole(userinfo.get().getRole_id());
             authResponse.setToken(jwtService.generateToken(userinfo.get().getUserId()));
-            System.out.println("nama ethanama "+jwtService.extractUserName(authResponse.getToken()));
             return authResponse;
         }
         throw new RuntimeException("Bad credentials");

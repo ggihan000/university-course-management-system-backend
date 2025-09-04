@@ -73,7 +73,7 @@ public class AdminService {
         Course course = new Course();
         course.setCourseCode(c_code);
         course.setTitle(courseRequest.getCourse_title());
-
+        course.setDescription(courseRequest.getCourse_description());
         coursesRepo.save(course);
         return course.getCourseCode();
     }

@@ -4,8 +4,10 @@ import com.example.ucms.dto.GetCourseDetailResponse;
 import com.example.ucms.dto.ResponseCourse;
 import com.example.ucms.model.Course;
 import com.example.ucms.model.Enrollment;
+import com.example.ucms.model.User;
 import com.example.ucms.repository.CoursesRepo;
 import com.example.ucms.repository.EnrollmentRepo;
+import com.example.ucms.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,23 +23,47 @@ public class StudentService {
     @Autowired
     private EnrollmentRepo enrollmentRepo;
 
+    @Autowired
+    private UserRepo userRepo;
+
     public void enrollCourse(String course_id, String student_id){
-        int num = enrollmentRepo.insertCoursesByUser(student_id, course_id);
-        if(num < 1){
-            throw new RuntimeException("Course not enrolled");
+        System.out.println(course_id+" "+student_id);
+        Optional<User> user = userRepo.findByUserId(student_id);
+        Optional<Course> course = coursesRepo.findByCourseCode(course_id);
+        if(course.isEmpty() || user.isEmpty()){
+            throw new RuntimeException("Course or User not found");
         }
+        Enrollment enrollment = new Enrollment();
+        enrollment.setCourse(course.get());
+        enrollment.setUser(user.get());
+
+        enrollmentRepo.save(enrollment);
     }
 
     public void unEnrollCourse(String course_id, String student_id){
-        int num = enrollmentRepo.deleteCoursesByUser(student_id, course_id);
-        if(num < 1){
-            throw new RuntimeException("Course not unenrolled");
+        Optional<User> user = userRepo.findByUserId(student_id);
+        Optional<Course> course = coursesRepo.findByCourseCode(course_id);
+        if(course.isEmpty() || user.isEmpty()){
+            throw new RuntimeException("Course or User not found");
         }
+        Optional<Enrollment> enrollment = enrollmentRepo.findByUserAndCourse(user.get(),course.get());
+        if (enrollment.isEmpty()){
+            throw new RuntimeException("User not enrolled with "+course_id+" course");
+        }
+        enrollmentRepo.delete(enrollment.get());
     }
 
     public GetCourseDetailResponse getCourseDetails(String userId){
         List<Course> courses = coursesRepo.findAll();
         List<Enrollment> enrollments = enrollmentRepo.findAllCoursesOfUser(userId);
+
+        for (Enrollment e : enrollments) {
+            System.out.println(e.getCourse().getCourseCode());
+        }
+
+        for (Course c : courses) {
+            System.out.println(c.getCourseCode());
+        }
 
         List<ResponseCourse> unEnrolledCourses = new ArrayList<>();
         List<ResponseCourse> enrolledCourses = new ArrayList<>();

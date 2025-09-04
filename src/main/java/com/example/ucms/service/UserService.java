@@ -19,12 +19,10 @@ public class UserService implements UserDetailsService {
     private UserRepo repo;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<User> user = repo.findByUserId(email);
-        user.get();
-        if (user == null) {
-            System.out.println("no user found");
-            throw new UsernameNotFoundException(email+" not found");
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        Optional<User> user = repo.findByUserId(userId);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("Bad username or password");
         }
         return new UserPrincipal(user.get());
     }

@@ -24,6 +24,7 @@ public class StudentController {
     @GetMapping("/get_course_details")
     public ResponseEntity<?> getCourseDetails(@AuthenticationPrincipal UserDetails userDetails) {
         try {
+            System.out.println("dfjdkf");
             GetCourseDetailResponse getCourseDetailResponse = studentService.getCourseDetails(userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(Map.of("success", true,
@@ -37,7 +38,6 @@ public class StudentController {
     @PostMapping("/enroll")
     public ResponseEntity<?> enroll(@AuthenticationPrincipal UserDetails userDetails,@RequestBody EnrollmentRequest enrollmentRequest) {
         try {
-            System.out.println("kkkkk");
             studentService.enrollCourse(enrollmentRequest.getCourse_id(),userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(Map.of("success", true,
@@ -55,7 +55,7 @@ public class StudentController {
             studentService.unEnrollCourse(enrollmentRequest.getCourse_id(), userDetails.getUsername());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(Map.of("success", true,
-                            "message", "Enrolled Successfully"));
+                            "message", "unEnrolled Successfully"));
         }catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

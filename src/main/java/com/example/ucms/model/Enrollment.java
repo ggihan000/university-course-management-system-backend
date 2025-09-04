@@ -26,6 +26,6 @@ public class Enrollment {
     @JoinColumn(name = "course_code", referencedColumnName = "course_code", nullable = false)
     private Course course;
 
-    @Column(nullable = false)
+    @Column
     private String grade;
 }

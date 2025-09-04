@@ -1,6 +1,7 @@
 package com.example.ucms.controller;
 
 import com.example.ucms.dto.AuthResponse;
+import com.example.ucms.dto.ChangePasswordRequest;
 import com.example.ucms.model.User;
 import com.example.ucms.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,20 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @PostMapping("/change_password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        try {
+            authService.changePassword(changePasswordRequest);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(Map.of("success", true,
+                            "message", "Password Changed Successfully"));
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false,
+                            "message", e.getMessage()));
+        }
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
